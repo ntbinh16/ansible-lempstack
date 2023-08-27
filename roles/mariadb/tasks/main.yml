@@ -1,0 +1,62 @@
+---
+- name: Add MariaDB.repo
+  ansible.builtin.yum_repository:
+    name: MariaDB
+    description: MariaDB repo
+    baseurl: https://download.nus.edu.sg/mirror/mariadb/yum/10.6/centos7-amd64
+    gpgkey: https://download.nus.edu.sg/mirror/mariadb/yum/RPM-GPG-KEY-MariaDB
+    gpgcheck: yes
+- name: Install mariadb
+  yum:
+    name:
+      - mariadb-server
+      - mariadb
+    state: latest
+- name: Enable mariadb
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+- name: Install MySQL-python
+  yum:
+    name: MySQL-python
+    state: latest
+- name: Copy file .my.cnf
+  copy:
+    src: /root/ansible/.my.cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    group: root
+    mode: 0600
+- name: Create root user
+  mysql_user:
+    check_implicit_admin: yes
+    name: root
+    host: localhost
+    password: "{{ mysql_root_password }}"
+    state: present
+- name: Create database
+  mysql_db:
+    name: example_database
+    state: present
+- name: Copy file example_table.sql
+  copy:
+    src: /root/ansible/example_table.sql
+    dest: /root/example_table.sql
+    owner: root
+    group: root
+    mode: 0600
+- name: Create table
+  mysql_db:
+    name: example_database
+    state: import
+    target: /root/example_table.sql
+- name: Create newuser user
+  mysql_user:
+    name: newuser
+    host: localhost
+    password: "{{ mysql_newuser_password }}"
+    priv: 'example_database.*:ALL'
+    state: present
+- name: Reload privilege tables
+  shell: mysql -u root -e 'FLUSH PRIVILEGES'

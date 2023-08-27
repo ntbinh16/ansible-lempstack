@@ -1,0 +1,16 @@
+---
+- name: Install Remi, yum-utils
+  yum:
+    name:
+      - http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+      - yum-utils
+    state: latest
+- name: Config version PHP
+  shell: yum-config-manager --enable remi-php80
+- name: Install PHP
+  yum:
+    name:
+      - php
+      - php-mysql
+      - php-fpm
+    state: latest

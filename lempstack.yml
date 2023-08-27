@@ -1,0 +1,9 @@
+---
+- name: Configure lemp
+  hosts: webserver1
+  vars_files:
+    - /root/ansible/vars/default.yml
+  roles:
+    - nginx
+    - mariadb
+    - php
